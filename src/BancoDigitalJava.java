@@ -1,5 +1,8 @@
+import models.Conta;
+import models.ContaCorrente;
+
 public class BancoDigitalJava {
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        Conta corrente = new ContaCorrente();
     }
 }
