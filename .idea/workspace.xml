@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4854c837-9209-4773-a4d2-eb8faf4c93ae" name="Changes" comment="Primeiro Commit">
-      <change afterPath="$PROJECT_DIR$/src/models/Conta.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/ContaCorrente.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/ContaPoupanca.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/IConta.java" afterDir="false" />
+    <list default="true" id="4854c837-9209-4773-a4d2-eb8faf4c93ae" name="Changes" comment="Criando funcionalidades e avisos">
+      <change afterPath="$PROJECT_DIR$/src/models/conta/Banco.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/models/usuario/User.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/BancoDigitalJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/BancoDigitalJava.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/Conta.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/conta/Conta.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/ContaCorrente.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/conta/ContaCorrente.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/ContaPoupanca.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/conta/ContaPoupanca.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/IConta.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/conta/IConta.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,12 +38,12 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="BancoDigitalJava" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="BancoDigitalJava" />

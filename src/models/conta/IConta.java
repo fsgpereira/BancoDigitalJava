@@ -1,4 +1,6 @@
-package models;
+package models.conta;
+
+import models.conta.Conta;
 
 public interface IConta {
 

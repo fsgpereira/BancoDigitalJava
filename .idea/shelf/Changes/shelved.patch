@@ -1,0 +1,467 @@
+Index: src/models/IConta.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/models/IConta.java b/src/models/conta/IConta.java
+rename from src/models/IConta.java
+rename to src/models/conta/IConta.java
+--- a/src/models/IConta.java	(revision 1daa53228258fe9bb97f301760e24b80d697935e)
++++ b/src/models/conta/IConta.java	(date 1659541459677)
+@@ -1,4 +1,4 @@
+-package models;
++package models.conta;
+ 
+ public interface IConta {
+ 
+@@ -6,4 +6,6 @@
+     void depositar(double valor);
+     void transferir(double valor, Conta contaDestino);
+ 
++    void extratoBancario();
++
+ }
+Index: src/models/Conta.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/models/Conta.java b/src/models/conta/Conta.java
+rename from src/models/Conta.java
+rename to src/models/conta/Conta.java
+--- a/src/models/Conta.java	(revision 1daa53228258fe9bb97f301760e24b80d697935e)
++++ b/src/models/conta/Conta.java	(date 1659549291078)
+@@ -1,35 +1,35 @@
+-package models;
++package models.conta;
++
++import models.usuario.User;
++
++import java.text.NumberFormat;
++import java.util.Locale;
+ 
+-public class Conta implements IConta{
++public class Conta implements IConta {
+ 
+-    private static final int AGENCIA_PADAO = 1;
++    private static final int AGENCIA_PADRAO = 1;
+     private static int SEQUENCIAL = 1;
+-
+     protected int agencia;
+     protected int numero;
++    protected User usuario;
++    protected Banco Banco;
++
+     protected double saldo;
+ 
+-    public Conta() {
+-        this.agencia = AGENCIA_PADAO;
++    public Conta(Banco banco, User usuario) {
++        this.agencia = AGENCIA_PADRAO;
+         this.numero = SEQUENCIAL++;
+-    }
+-
+-    public int getAgencia() {
+-        return agencia;
+-    }
+-
+-    public int getNumero() {
+-        return numero;
+-    }
+-
+-    public double getSaldo() {
+-        return saldo;
++        this.Banco = banco;
++        this.usuario = usuario;
++        this.saldo = 0;
+     }
+ 
+     @Override
+     public void sacar(double valor) {
+-        if(valor > saldo) {
++        if(saldo >= valor) {
+             saldo -= valor;
++        } else {
++            System.out.println(String.format("Saldo insuficiente! Saldo restante: %.2f", saldo));
+         }
+     }
+ 
+@@ -45,6 +45,18 @@
+         if(valor > 0){
+             this.sacar(valor);
+             contaDestino.depositar(valor);
++            System.out.println(String.format("Tranferencia realizada com sucesso! no valor de %.2f", valor));
+         }
+     }
++
++    @Override
++    public void extratoBancario() {
++        System.out.println("==Extrato Bancario==");
++        System.out.println(String.format("  --Banco: %s",this.Banco.getBanco()));
++        System.out.println(String.format("  --Titular: %s",this.usuario.getNome()));
++        System.out.println(String.format("  --Agencia: %d", this.agencia));
++        System.out.println(String.format("  --Conta: %d", this.numero));
++        System.out.println(String.format("==Saldo: %.2f", this.saldo));
++        System.out.println("===Fim do extrato===\n");
++    }
+ }
+Index: src/BancoDigitalJava.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import models.Conta;\r\nimport models.ContaCorrente;\r\n\r\npublic class BancoDigitalJava {\r\n    public static void main(String[] args) {\r\n        Conta corrente = new ContaCorrente();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/BancoDigitalJava.java b/src/BancoDigitalJava.java
+--- a/src/BancoDigitalJava.java	(revision 1daa53228258fe9bb97f301760e24b80d697935e)
++++ b/src/BancoDigitalJava.java	(date 1659549364242)
+@@ -1,8 +1,38 @@
+-import models.Conta;
+-import models.ContaCorrente;
++import models.conta.Banco;
++import models.conta.Conta;
++import models.conta.ContaCorrente;
++import models.conta.ContaPoupanca;
++import models.usuario.User;
++
++import java.util.Arrays;
+ 
+ public class BancoDigitalJava {
+     public static void main(String[] args) {
+-        Conta corrente = new ContaCorrente();
++
++        //criando o cadastro do banco
++        Banco santander = new Banco(33,"Santander");
++
++        //criando um usuario
++        User gustavo = new User("Gustavo", "Pereira");
++
++        //criando 2 contas vinculando o usuario e o banco
++        Conta corrente = new ContaCorrente(santander, gustavo);
++        Conta poupanca = new ContaPoupanca(santander, gustavo);
++
++
++        //realizando deposito, saque e transferencia
++        corrente.depositar(1000);
++        corrente.sacar(200);
++        corrente.transferir(500, poupanca);
++        corrente.sacar(500);
++
++        //visualizando extratos
++        corrente.extratoBancario();
++        poupanca.extratoBancario();
++
++        //recebendo aviso de saldo insuficiente
++        corrente.sacar(2000);
++
++
+     }
+ }
+Index: src/models/conta/Banco.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/models/conta/Banco.java b/src/models/conta/Banco.java
+new file mode 100644
+--- /dev/null	(date 1659548240810)
++++ b/src/models/conta/Banco.java	(date 1659548240810)
+@@ -0,0 +1,23 @@
++package models.conta;
++
++import models.usuario.User;
++
++import java.util.Collection;
++import java.util.Iterator;
++import java.util.List;
++import java.util.ListIterator;
++
++public class Banco {
++
++    private int id;
++    private String banco;
++
++    public Banco(int codigo, String banco) {
++        this.id = codigo;
++        this.banco = banco;
++    }
++
++    public String getBanco() {
++        return banco;
++    }
++}
+Index: .idea/uiDesigner.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/uiDesigner.xml b/.idea/uiDesigner.xml
+new file mode 100644
+--- /dev/null	(date 1659540403268)
++++ b/.idea/uiDesigner.xml	(date 1659540403268)
+@@ -0,0 +1,124 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="Palette2">
++    <group name="Swing">
++      <item class="com.intellij.uiDesigner.HSpacer" tooltip-text="Horizontal Spacer" icon="/com/intellij/uiDesigner/icons/hspacer.svg" removable="false" auto-create-binding="false" can-attach-label="false">
++        <default-constraints vsize-policy="1" hsize-policy="6" anchor="0" fill="1" />
++      </item>
++      <item class="com.intellij.uiDesigner.VSpacer" tooltip-text="Vertical Spacer" icon="/com/intellij/uiDesigner/icons/vspacer.svg" removable="false" auto-create-binding="false" can-attach-label="false">
++        <default-constraints vsize-policy="6" hsize-policy="1" anchor="0" fill="2" />
++      </item>
++      <item class="javax.swing.JPanel" icon="/com/intellij/uiDesigner/icons/panel.svg" removable="false" auto-create-binding="false" can-attach-label="false">
++        <default-constraints vsize-policy="3" hsize-policy="3" anchor="0" fill="3" />
++      </item>
++      <item class="javax.swing.JScrollPane" icon="/com/intellij/uiDesigner/icons/scrollPane.svg" removable="false" auto-create-binding="false" can-attach-label="true">
++        <default-constraints vsize-policy="7" hsize-policy="7" anchor="0" fill="3" />
++      </item>
++      <item class="javax.swing.JButton" icon="/com/intellij/uiDesigner/icons/button.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="0" hsize-policy="3" anchor="0" fill="1" />
++        <initial-values>
++          <property name="text" value="Button" />
++        </initial-values>
++      </item>
++      <item class="javax.swing.JRadioButton" icon="/com/intellij/uiDesigner/icons/radioButton.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="0" hsize-policy="3" anchor="8" fill="0" />
++        <initial-values>
++          <property name="text" value="RadioButton" />
++        </initial-values>
++      </item>
++      <item class="javax.swing.JCheckBox" icon="/com/intellij/uiDesigner/icons/checkBox.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="0" hsize-policy="3" anchor="8" fill="0" />
++        <initial-values>
++          <property name="text" value="CheckBox" />
++        </initial-values>
++      </item>
++      <item class="javax.swing.JLabel" icon="/com/intellij/uiDesigner/icons/label.svg" removable="false" auto-create-binding="false" can-attach-label="false">
++        <default-constraints vsize-policy="0" hsize-policy="0" anchor="8" fill="0" />
++        <initial-values>
++          <property name="text" value="Label" />
++        </initial-values>
++      </item>
++      <item class="javax.swing.JTextField" icon="/com/intellij/uiDesigner/icons/textField.svg" removable="false" auto-create-binding="true" can-attach-label="true">
++        <default-constraints vsize-policy="0" hsize-policy="6" anchor="8" fill="1">
++          <preferred-size width="150" height="-1" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JPasswordField" icon="/com/intellij/uiDesigner/icons/passwordField.svg" removable="false" auto-create-binding="true" can-attach-label="true">
++        <default-constraints vsize-policy="0" hsize-policy="6" anchor="8" fill="1">
++          <preferred-size width="150" height="-1" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JFormattedTextField" icon="/com/intellij/uiDesigner/icons/formattedTextField.svg" removable="false" auto-create-binding="true" can-attach-label="true">
++        <default-constraints vsize-policy="0" hsize-policy="6" anchor="8" fill="1">
++          <preferred-size width="150" height="-1" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JTextArea" icon="/com/intellij/uiDesigner/icons/textArea.svg" removable="false" auto-create-binding="true" can-attach-label="true">
++        <default-constraints vsize-policy="6" hsize-policy="6" anchor="0" fill="3">
++          <preferred-size width="150" height="50" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JTextPane" icon="/com/intellij/uiDesigner/icons/textPane.svg" removable="false" auto-create-binding="true" can-attach-label="true">
++        <default-constraints vsize-policy="6" hsize-policy="6" anchor="0" fill="3">
++          <preferred-size width="150" height="50" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JEditorPane" icon="/com/intellij/uiDesigner/icons/editorPane.svg" removable="false" auto-create-binding="true" can-attach-label="true">
++        <default-constraints vsize-policy="6" hsize-policy="6" anchor="0" fill="3">
++          <preferred-size width="150" height="50" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JComboBox" icon="/com/intellij/uiDesigner/icons/comboBox.svg" removable="false" auto-create-binding="true" can-attach-label="true">
++        <default-constraints vsize-policy="0" hsize-policy="2" anchor="8" fill="1" />
++      </item>
++      <item class="javax.swing.JTable" icon="/com/intellij/uiDesigner/icons/table.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="6" hsize-policy="6" anchor="0" fill="3">
++          <preferred-size width="150" height="50" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JList" icon="/com/intellij/uiDesigner/icons/list.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="6" hsize-policy="2" anchor="0" fill="3">
++          <preferred-size width="150" height="50" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JTree" icon="/com/intellij/uiDesigner/icons/tree.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="6" hsize-policy="6" anchor="0" fill="3">
++          <preferred-size width="150" height="50" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JTabbedPane" icon="/com/intellij/uiDesigner/icons/tabbedPane.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="3" hsize-policy="3" anchor="0" fill="3">
++          <preferred-size width="200" height="200" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JSplitPane" icon="/com/intellij/uiDesigner/icons/splitPane.svg" removable="false" auto-create-binding="false" can-attach-label="false">
++        <default-constraints vsize-policy="3" hsize-policy="3" anchor="0" fill="3">
++          <preferred-size width="200" height="200" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JSpinner" icon="/com/intellij/uiDesigner/icons/spinner.svg" removable="false" auto-create-binding="true" can-attach-label="true">
++        <default-constraints vsize-policy="0" hsize-policy="6" anchor="8" fill="1" />
++      </item>
++      <item class="javax.swing.JSlider" icon="/com/intellij/uiDesigner/icons/slider.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="0" hsize-policy="6" anchor="8" fill="1" />
++      </item>
++      <item class="javax.swing.JSeparator" icon="/com/intellij/uiDesigner/icons/separator.svg" removable="false" auto-create-binding="false" can-attach-label="false">
++        <default-constraints vsize-policy="6" hsize-policy="6" anchor="0" fill="3" />
++      </item>
++      <item class="javax.swing.JProgressBar" icon="/com/intellij/uiDesigner/icons/progressbar.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="0" hsize-policy="6" anchor="0" fill="1" />
++      </item>
++      <item class="javax.swing.JToolBar" icon="/com/intellij/uiDesigner/icons/toolbar.svg" removable="false" auto-create-binding="false" can-attach-label="false">
++        <default-constraints vsize-policy="0" hsize-policy="6" anchor="0" fill="1">
++          <preferred-size width="-1" height="20" />
++        </default-constraints>
++      </item>
++      <item class="javax.swing.JToolBar$Separator" icon="/com/intellij/uiDesigner/icons/toolbarSeparator.svg" removable="false" auto-create-binding="false" can-attach-label="false">
++        <default-constraints vsize-policy="0" hsize-policy="0" anchor="0" fill="1" />
++      </item>
++      <item class="javax.swing.JScrollBar" icon="/com/intellij/uiDesigner/icons/scrollbar.svg" removable="false" auto-create-binding="true" can-attach-label="false">
++        <default-constraints vsize-policy="6" hsize-policy="0" anchor="0" fill="2" />
++      </item>
++    </group>
++  </component>
++</project>
+\ No newline at end of file
+Index: src/models/usuario/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/models/usuario/User.java b/src/models/usuario/User.java
+new file mode 100644
+--- /dev/null	(date 1659548240826)
++++ b/src/models/usuario/User.java	(date 1659548240826)
+@@ -0,0 +1,27 @@
++package models.usuario;
++import models.conta.Conta;
++
++import java.util.Collection;
++import java.util.Iterator;
++import java.util.List;
++import java.util.ListIterator;
++
++public class User {
++
++    private static int SEQUENCIA = 1;
++    protected int id;
++    private String nome;
++    private String sobrenome;
++
++    public User(String nome, String sobrenome) {
++        this.id = SEQUENCIA++;
++        this.nome = nome;
++        this.sobrenome = sobrenome;
++    }
++
++    public String getNome() {
++        return nome;
++    }
++
++
++}
+Index: src/models/ContaPoupanca.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/models/ContaPoupanca.java b/src/models/conta/ContaPoupanca.java
+rename from src/models/ContaPoupanca.java
+rename to src/models/conta/ContaPoupanca.java
+--- a/src/models/ContaPoupanca.java	(revision 1daa53228258fe9bb97f301760e24b80d697935e)
++++ b/src/models/conta/ContaPoupanca.java	(date 1659547448284)
+@@ -1,4 +1,9 @@
+-package models;
++package models.conta;
++
++import models.usuario.User;
+ 
+ public class ContaPoupanca extends Conta{
++    public ContaPoupanca(Banco banco, User usuario) {
++        super(banco, usuario);
++    }
+ }
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"4854c837-9209-4773-a4d2-eb8faf4c93ae\" name=\"Changes\" comment=\"Primeiro Commit\">\r\n      <change afterPath=\"$PROJECT_DIR$/src/models/Conta.java\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/src/models/ContaCorrente.java\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/src/models/ContaPoupanca.java\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/src/models/IConta.java\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/BancoDigitalJava.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/BancoDigitalJava.java\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"package-info\" />\r\n        <option value=\"Class\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"MarkdownSettingsMigration\">\r\n    <option name=\"stateVersion\" value=\"1\" />\r\n  </component>\r\n  <component name=\"ProjectId\" id=\"2CqYuBSxK7cTf1AYSRPcGL1vXyz\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\">\r\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\r\n  </component>\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"RunOnceActivity.OpenProjectViewOnStart\": \"true\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\"\r\n  }\r\n}]]></component>\r\n  <component name=\"RunManager\">\r\n    <configuration name=\"BancoDigitalJava\" type=\"Application\" factoryName=\"Application\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <option name=\"MAIN_CLASS_NAME\" value=\"BancoDigitalJava\" />\r\n      <module name=\"banco-digital-java\" />\r\n      <method v=\"2\">\r\n        <option name=\"Make\" enabled=\"true\" />\r\n      </method>\r\n    </configuration>\r\n    <recent_temporary>\r\n      <list>\r\n        <item itemvalue=\"Application.BancoDigitalJava\" />\r\n      </list>\r\n    </recent_temporary>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"4854c837-9209-4773-a4d2-eb8faf4c93ae\" name=\"Changes\" comment=\"\" />\r\n      <created>1659531808389</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1659531808389</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"Primeiro Commit\">\r\n      <created>1659532432648</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1659532432648</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"2\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <MESSAGE value=\"Primeiro Commit\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"Primeiro Commit\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 1daa53228258fe9bb97f301760e24b80d697935e)
++++ b/.idea/workspace.xml	(date 1659545741711)
+@@ -1,13 +1,16 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="ChangeListManager">
+-    <list default="true" id="4854c837-9209-4773-a4d2-eb8faf4c93ae" name="Changes" comment="Primeiro Commit">
+-      <change afterPath="$PROJECT_DIR$/src/models/Conta.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/src/models/ContaCorrente.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/src/models/ContaPoupanca.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/src/models/IConta.java" afterDir="false" />
++    <list default="true" id="4854c837-9209-4773-a4d2-eb8faf4c93ae" name="Changes" comment="Adicionando abstração da conta">
++      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/models/conta/Banco.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/models/usuario/User.java" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/src/BancoDigitalJava.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/BancoDigitalJava.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/models/Conta.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/conta/Conta.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/models/ContaCorrente.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/conta/ContaCorrente.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/models/ContaPoupanca.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/conta/ContaPoupanca.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/models/IConta.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/conta/IConta.java" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -18,6 +21,7 @@
+     <option name="RECENT_TEMPLATES">
+       <list>
+         <option value="package-info" />
++        <option value="Interface" />
+         <option value="Class" />
+       </list>
+     </option>
+@@ -39,7 +43,8 @@
+   <component name="PropertiesComponent"><![CDATA[{
+   "keyToString": {
+     "RunOnceActivity.OpenProjectViewOnStart": "true",
+-    "RunOnceActivity.ShowReadmeOnStart": "true"
++    "RunOnceActivity.ShowReadmeOnStart": "true",
++    "SHARE_PROJECT_CONFIGURATION_FILES": "true"
+   }
+ }]]></component>
+   <component name="RunManager">
+@@ -88,6 +93,7 @@
+   </component>
+   <component name="VcsManagerConfiguration">
+     <MESSAGE value="Primeiro Commit" />
+-    <option name="LAST_COMMIT_MESSAGE" value="Primeiro Commit" />
++    <MESSAGE value="Adicionando abstração da conta" />
++    <option name="LAST_COMMIT_MESSAGE" value="Adicionando abstração da conta" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: src/models/ContaCorrente.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/models/ContaCorrente.java b/src/models/conta/ContaCorrente.java
+rename from src/models/ContaCorrente.java
+rename to src/models/conta/ContaCorrente.java
+--- a/src/models/ContaCorrente.java	(revision 1daa53228258fe9bb97f301760e24b80d697935e)
++++ b/src/models/conta/ContaCorrente.java	(date 1659547193517)
+@@ -1,5 +1,9 @@
+-package models;
++package models.conta;
++
++import models.usuario.User;
+ 
+ public class ContaCorrente extends Conta{
+-
++    public ContaCorrente(Banco banco, User usuario) {
++        super(banco, usuario);
++    }
+ }
